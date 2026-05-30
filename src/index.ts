@@ -1,2 +1,3 @@
-const obj: string = "hello world";
-const str: string = 'obj'
+import Grimpan from "./grimpan.js";
+
+console.log(Grimpan.getInstance() === Grimpan.getInstance());
