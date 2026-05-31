@@ -1,18 +1,70 @@
-import type Grimpan from "./AbstractGrimpan";
-import type { ChromeGrimpan } from "./ChormeGrimpan";
-// import type ChromeGrimpan from "./ChormeGrimpan";
-import type IEGrimpan from "./IEGrimpan";
+import type Grimpan from "./AbstractGrimpan.js";
+import type { ChromeGrimpan } from "./ChormeGrimpan.js";
+import { GrimpanMenuBtn } from "./GrimpanMenuBtn.js";
+import type IEGrimpan from "./IEGrimpan.js";
+
+export type BtnType = | "pen" | "circle" | "rectangle" | "eraser"
+  | "back" | "forward" | "save" | "pipette" | "color";
 
 export abstract class GrimpanMenu {
   grimpan: Grimpan;
+  dom: HTMLElement;
 
-  protected constructor(grimpan: Grimpan) {
+  protected constructor(grimpan: Grimpan, dom: HTMLElement) {
     this.grimpan = grimpan;
+    this.dom = dom;
   }
 
-  abstract initialize (): void;
+  abstract initialize (types: BtnType[]): void;
 
-  static getInstance(grimpan: Grimpan) {}
+  static getInstance(grimpan: Grimpan, dom: HTMLElement) {}
+}
+  
+export class ChromeGrimpanMenu extends GrimpanMenu {
+  private static instance: ChromeGrimpanMenu;
+
+  override initialize(types: BtnType[]): void {
+    types.forEach((type) => {
+      const btn = this.drowButtonByType(type);
+      btn.draw();
+    })
+  }
+
+  drowButtonByType(type: BtnType) {
+    switch (type) {
+      case "back": {
+        return new GrimpanMenuBtn.Builder(this, "뒤로")
+          .setOnClick(() => {
+            // TODO: 실제 뒤로가기 동작
+          })
+          .build();
+      }
+      case "forward": {
+        return new GrimpanMenuBtn.Builder(this, "앞으로")
+          .setOnClick(() => {
+            // TODO: 실제 앞으로가기 동작
+          })
+          .build();
+      }
+      case "pen": {
+        return new GrimpanMenuBtn.Builder(this, "펜")
+          .setActive(true)
+          .setOnClick(() => {})
+          .build();
+      }
+      // 필요에 따라 circle, rectangle, eraser, save, color, pipette 추가
+      default: {
+        return new GrimpanMenuBtn.Builder(this, type).build();
+      }
+  }
+}
+
+  static override getInstance(grimpan: ChromeGrimpan, dom: HTMLElement): ChromeGrimpanMenu {
+    if (!this.instance) {
+      this.instance = new ChromeGrimpanMenu(grimpan, dom)
+    }
+    return this.instance;
+  }
 }
 
 export class IEGrimpanMenu extends GrimpanMenu {
@@ -20,23 +72,11 @@ export class IEGrimpanMenu extends GrimpanMenu {
   override initialize(): void {
     
   }
-  static override getInstance(grimpan: IEGrimpan): IEGrimpanMenu {
+  static override getInstance(grimpan: IEGrimpan, dom: HTMLElement): IEGrimpanMenu {
     if (!this.instance) {
-      this.instance = new IEGrimpanMenu(grimpan)
+      this.instance = new IEGrimpanMenu(grimpan, dom)
     }
     return this.instance;
   }
 }
 
-export class ChromeGrimpanMenu extends GrimpanMenu {
-  private static instance: ChromeGrimpanMenu;
-  override initialize(): void {
-
-  }
-  static override getInstance(grimpan: ChromeGrimpan): ChromeGrimpanMenu {
-    if (!this.instance) {
-      this.instance = new ChromeGrimpanMenu(grimpan)
-    }
-    return this.instance;
-  }
-}
