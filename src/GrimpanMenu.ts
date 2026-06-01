@@ -6,6 +6,33 @@ import type IEGrimpan from "./IEGrimpan.js";
 export type BtnType = | "pen" | "circle" | "rectangle" | "eraser"
   | "back" | "forward" | "save" | "pipette" | "color";
 
+ abstract class Command {
+  abstract execute(): void;
+ }
+
+ class BackCommand extends Command {
+  name = 'back';
+
+  override execute(): void {
+    this.grimpan.history.back();
+  }
+ }
+
+ class PenCommand extends Command {
+  name = 'pen';
+
+  override execute(): void {
+    this.grimpan.history.pen();
+  }
+ }
+
+ class EraserCommand extends Command {
+    name = 'eraser';
+    execute() {
+        // 지우개 구현
+    }
+}
+
 export abstract class GrimpanMenu {
   grimpan: Grimpan;
   dom: HTMLElement;
@@ -30,26 +57,42 @@ export class ChromeGrimpanMenu extends GrimpanMenu {
     })
   }
 
+  executeCommand(command: Command) {
+    
+    command.execute();
+  }
+
+  onClickBack() {
+    this.executeCommand(new BackCommand())
+  }
+
+  onClickPen() {
+    const command = new PenCommand();
+    this.executeCommand(command);
+    this.grimpan.history.push(command)
+  }
+
+  
+  onClickEraser() {
+    this.executeCommand(new EraserCommand())
+  }
+
   drowButtonByType(type: BtnType) {
     switch (type) {
       case "back": {
         return new GrimpanMenuBtn.Builder(this, "뒤로")
-          .setOnClick(() => {
-            // TODO: 실제 뒤로가기 동작
-          })
+          .setOnClick(this.onClickBack.bind(this))
           .build();
       }
       case "forward": {
         return new GrimpanMenuBtn.Builder(this, "앞으로")
-          .setOnClick(() => {
-            // TODO: 실제 앞으로가기 동작
-          })
+          .setOnClick(() => {})
           .build();
       }
       case "pen": {
         return new GrimpanMenuBtn.Builder(this, "펜")
           .setActive(true)
-          .setOnClick(() => {})
+          .setOnClick(this.onClickPen.bind(this))
           .build();
       }
       // 필요에 따라 circle, rectangle, eraser, save, color, pipette 추가
@@ -57,7 +100,7 @@ export class ChromeGrimpanMenu extends GrimpanMenu {
         return new GrimpanMenuBtn.Builder(this, type).build();
       }
   }
-}
+  }
 
   static override getInstance(grimpan: ChromeGrimpan, dom: HTMLElement): ChromeGrimpanMenu {
     if (!this.instance) {
