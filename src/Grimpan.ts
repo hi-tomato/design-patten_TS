@@ -5,10 +5,11 @@
  * 3. 싱글톤 패턴을 적용하여, getInstance 메서드를 통해 인스턴스를 반환합니다.
  * */
 
-import { BackCommand, ForwardCommand } from "./commands/index.js";
+import { BackCommand, Command, ForwardCommand } from "./commands/index.js";
 import { ChromeGrimpanFactory, IEGrimpanFactory, type AbstractGrimpanFactory } from "./GrimpanFactory.js";
 import type { ChromeGrimpanHistory, GrimpanHistory } from "./GrimpanHistory.js";
 import type { BtnType, ChromeGrimpanMenu, GrimpanMenu } from "./GrimpanMenu.js";
+import { CircleMode, EraserMode, PenMode, PipetteMode, RectangleMode, type Mode } from "./modes/index.js";
 
 export interface GrimpanOption {
   menu: BtnType[];
@@ -16,27 +17,66 @@ export interface GrimpanOption {
 
 export type GrimpanMode = 'pen' | 'eraser' | 'pipette' | 'circle' | 'rectangle';
 
+
 export default abstract class Grimpan {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   history!: GrimpanHistory;
   menu!: GrimpanMenu;
-  mode!: GrimpanMode;
-  
-  initialize(option: GrimpanOption) { }
+  mode!: Mode;
+  color: string;
+  active: boolean;
 
   protected constructor(canvas: HTMLCanvasElement, factory: typeof AbstractGrimpanFactory) {
     if(!canvas || !(canvas instanceof HTMLCanvasElement)) {
       throw new Error('Canvas element not found');
     }
+
     this.canvas = canvas;
     this.ctx = this.canvas.getContext('2d')!;
+    this.color = '#000000';
+    this.active = false;
+  }
+
+  setColor(color: string) {
+    this.color = color;
   }
 
   setMode(mode: GrimpanMode) {
     console.log('mode change', mode)
-    this.mode = mode;
+    switch(mode) {
+      case "pen":
+        this.mode = new PenMode(this);
+        break;
+      case "eraser":
+        this.mode = new EraserMode(this);
+        break;
+      case "pipette":
+        this.mode = new PipetteMode(this);
+        break;
+      case "circle":
+        this.mode = new CircleMode(this);
+        break;
+      case "rectangle":
+        this.mode = new RectangleMode(this);
+        break;
+    }
   }
+
+  changeColor(color: string) {
+    this.setColor(color);
+    
+    if(this.menu.colorBtn) {
+      this.menu.colorBtn.value = color;
+    }
+  }
+
+  executeCommand(command: Command) {}
+
+  abstract initialize(option: GrimpanOption): void;
+  abstract onMouseDown(e: MouseEvent): void;
+  abstract onMouseMove(e: MouseEvent): void;
+  abstract onMouseUp(e: MouseEvent): void;
 
   static getInstance() {
     
@@ -59,6 +99,9 @@ export class ChromeGrimpan extends Grimpan {
   override initialize(option: GrimpanOption) {
     this.menu.initialize(option.menu);
     this.history.initialize();
+    this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this))
+    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this))
+    this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this))
     window.addEventListener('keyup', (e: KeyboardEvent) => {
       console.log(e);
       if(e.code === 'KeyZ' && e.ctrlKey && e.shiftKey) {
@@ -72,6 +115,19 @@ export class ChromeGrimpan extends Grimpan {
     })
   }
 
+  override onMouseDown(e: MouseEvent) {
+    this.mode.mouseDown(e)
+  };
+
+  override onMouseMove(e: MouseEvent) {
+    this.mode.mouseMove(e)
+  };
+
+  override onMouseUp(e: MouseEvent) {
+    this.mode.mouseUp(e)
+  };
+
+
   static override getInstance() {
     if(!this.instance) {
       this.instance = new ChromeGrimpan(document.querySelector('#canvas')!, ChromeGrimpanFactory);
@@ -84,7 +140,26 @@ export class ChromeGrimpan extends Grimpan {
 export class IEGrimpan extends Grimpan {
   private static instance: IEGrimpan;
 
-  override initialize() {}
+  override initialize(option: GrimpanOption) {
+    this.menu.initialize(option.menu)
+    this.history.initialize();
+    this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this))
+    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this))
+    this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this))
+  }
+
+
+  override onMouseDown(e: MouseEvent) {
+
+  };
+  
+  override onMouseMove(e: MouseEvent) {
+    
+  };
+
+  override onMouseUp(e: MouseEvent) {
+    
+  };
 
   static override getInstance() {
     if (!this.instance) {

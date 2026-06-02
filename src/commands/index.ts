@@ -37,7 +37,7 @@ import type { GrimpanHistory } from "../GrimpanHistory.js";
   }
 
   override execute(): void {
-    this.grimpan.setMode("pen");
+    this.grimpan.menu.setActiveBtn('pen');
   }
  }
 
@@ -61,7 +61,7 @@ import type { GrimpanHistory } from "../GrimpanHistory.js";
     }
 
     override execute() {
-      this.grimpan.setMode("circle");
+      this.grimpan.menu.setActiveBtn('circle');
     }
 }
 
