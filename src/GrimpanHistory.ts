@@ -1,5 +1,5 @@
-import type Grimpan from "./AbstractGrimpan";
-import type { ChromeGrimpan } from "./ChormeGrimpan";
+import type Grimpan from "./Grimpan";
+import type { ChromeGrimpan } from "./Grimpan";
 
 interface Cloneable {
   clone(): Cloneable;
@@ -22,6 +22,8 @@ export abstract class GrimpanHistory {
   }
 
   abstract initialize (): void;
+  abstract undo(): void;
+  abstract redo(): void;
 
   getStack() {
     return this.stack.clone();
@@ -39,6 +41,10 @@ export class IEGrimpanHistory extends GrimpanHistory {
 
   override initialize() {}
 
+  override undo() {}
+
+  override redo() {}
+
   static override getInstance(grimpan: Grimpan) {
     if(!this.instance) {
       this.instance = new IEGrimpanHistory(grimpan, new HistoryStack());
@@ -50,9 +56,19 @@ export class IEGrimpanHistory extends GrimpanHistory {
 
 export class ChromeGrimpanHistory extends GrimpanHistory {
   private static instance: ChromeGrimpanHistory;
+
   override initialize(): void {
     
   }
+
+  override undo() {
+
+  }
+
+  override redo() {
+    
+  }
+
   static override getInstance(grimpan: ChromeGrimpan): ChromeGrimpanHistory {
     if (!this.instance) {
       this.instance = new ChromeGrimpanHistory(grimpan, new HistoryStack());

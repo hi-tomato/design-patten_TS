@@ -2,13 +2,12 @@
  * @description singleton 패턴을 적용한 GrimpanFactory의 추상 클래스입니다.
  */
 
-import type Grimpan from "./AbstractGrimpan.js";
-import { ChromeGrimpan } from "./ChormeGrimpan.js";
+import type Grimpan from "./Grimpan.js";
+import { ChromeGrimpan, IEGrimpan } from "./Grimpan.js";
 import { ChromeGrimpanHistory, IEGrimpanHistory } from "./GrimpanHistory.js";
 import { ChromeGrimpanMenu, IEGrimpanMenu } from "./GrimpanMenu.js";
-import IEGrimpan from "./IEGrimpan.js";
 
-abstract class AbstractGrimpanFactory {
+export abstract class AbstractGrimpanFactory {
   static createGrimpan() {
     throw new Error('하위 클래스에서 구현하셔야 합니다.')
   }
