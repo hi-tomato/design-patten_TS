@@ -17,6 +17,7 @@ export interface GrimpanOption {
 
 export type GrimpanMode = 'pen' | 'eraser' | 'pipette' | 'circle' | 'rectangle';
 
+export type ImageType = 'png' | 'jpg' | 'webp' | 'avif' | 'gif' | 'pdf';
 
 export default abstract class Grimpan {
   canvas: HTMLCanvasElement;
@@ -26,6 +27,7 @@ export default abstract class Grimpan {
   mode!: Mode;
   color: string;
   active: boolean;
+  saveStrategy!: () => void;
 
   protected constructor(canvas: HTMLCanvasElement, factory: typeof AbstractGrimpanFactory) {
     if(!canvas || !(canvas instanceof HTMLCanvasElement)) {
@@ -36,7 +38,48 @@ export default abstract class Grimpan {
     this.ctx = this.canvas.getContext('2d')!;
     this.color = '#000000';
     this.active = false;
+    this.setSaveStrategy('png');
   }
+
+  setSaveStrategy(imageType: ImageType) {
+    switch(imageType) {
+    case 'png': {
+      this.saveStrategy = () => {
+        const a_Tag = document.createElement('a');
+        a_Tag.download = 'canvas.png';
+        const dataURL = a_Tag.href = this.canvas.toDataURL('image/png');
+        let url = dataURL.replace('image/webp', 'data:application/octet-stream');
+        a_Tag.href = url;
+        a_Tag.click();
+      }
+      break;
+    }
+    case 'jpg': {
+      this.saveStrategy = () => {
+        const a_Tag = document.createElement('a');
+        a_Tag.download = 'canvas.jpg';
+        const dataURL = a_Tag.href = this.canvas.toDataURL('image/jpg');
+        let url = dataURL.replace('image/webp', 'data:application/octet-stream');
+        a_Tag.href = url;
+        a_Tag.click();
+      }
+      break;
+    }
+    case 'webp': {
+      this.saveStrategy = () => {
+        const a_Tag = document.createElement('a');
+        a_Tag.download = 'canvas.webp';
+        const dataURL = a_Tag.href = this.canvas.toDataURL('image/webp');
+        let url = dataURL.replace('image/webp', 'data:application/octet-stream');
+        a_Tag.href = url;
+        a_Tag.click();
+      }
+      break;
+    }
+    default: {
+      throw new Error('Invalid image type');
+    }
+  }}
 
   setColor(color: string) {
     this.color = color;

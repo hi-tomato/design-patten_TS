@@ -88,3 +88,15 @@ import type { GrimpanHistory } from "../GrimpanHistory.js";
       this.grimpan.menu.setActiveBtn("pipette");
     }
 }
+
+export class SaveCommand extends Command {
+      name = 'save';
+
+      constructor(private grimpan: Grimpan) {
+        super();
+      }
+
+      override execute() {
+        this.grimpan.saveStrategy();
+      }
+}
